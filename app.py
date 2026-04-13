@@ -1,6 +1,14 @@
 ﻿import streamlit as st
 import os
+import pandas as pd
+import streamlit as st
 
+url = "https://drive.google.com/uc?id=1mcyb_HcW21QiD56mMjuFj-pDIW7GPE_f"
+
+df = pd.read_csv(url)
+
+st.write("Dataset Loaded Successfully ✅")
+st.write(df.head())
 # -------------------------
 # Page Config
 # -------------------------
