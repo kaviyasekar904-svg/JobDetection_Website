@@ -1,0 +1,9 @@
+saved_model/
+dataset/
+venv/
+__pycache__/
+*.pkl
+*.pt
+*.bin
+*.csv
+*.safetensors
