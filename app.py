@@ -1,16 +1,9 @@
-﻿import streamlit as st
+import streamlit as st
 import os
 import pandas as pd
-import streamlit as st
-
-url = "https://drive.google.com/uc?id=1mcyb_HcW21QiD56mMjuFj-pDIW7GPE_f"
-
-df = pd.read_csv(url)
-
-st.write("Dataset Loaded Successfully ✅")
-st.write(df.head())
+st.session_state["data"] = df
 # -------------------------
-# Page Config
+# Page Config (MUST BE FIRST)
 # -------------------------
 st.set_page_config(
     page_title="Fake Job Detection",
@@ -19,12 +12,27 @@ st.set_page_config(
 )
 
 # -------------------------
+# Load Dataset (Cached ✅)
+# -------------------------
+@st.cache_data
+def load_data():
+    url = "https://drive.google.com/uc?id=1mcyb_HcW21QiD56mMjuFj-pDIW7GPE_f"
+    return pd.read_csv(url)
+
+df = load_data()
+
+# Optional (debug)
+st.write("Dataset Loaded Successfully ✅")
+st.write(df.head())
+
+# -------------------------
 # Load CSS
 # -------------------------
 def load_css():
     css_file = os.path.join("assets", "styles.css")
-    with open(css_file) as f:
-        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    if os.path.exists(css_file):   # ✅ avoid crash
+        with open(css_file) as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 load_css()
 
@@ -37,4 +45,3 @@ page = st.navigation([
 ])
 
 page.run()
-
