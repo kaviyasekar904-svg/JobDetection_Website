@@ -2,6 +2,9 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 import os
+df = st.session_state.get("data")
+
+st.write(df.head())
 
 try:
     from playwright.sync_api import sync_playwright
