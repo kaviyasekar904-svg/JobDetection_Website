@@ -51,6 +51,14 @@ else:
 st.sidebar.success("🚀 Fake Job Detection System")
 
 # -------------------------
+# Load CSS
+# -------------------------
+def load_css():
+    css_file = os.path.join("assets", "styles.css")
+    with open(css_file) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+# -------------------------
 # Navigation
 # -------------------------
 page = st.navigation([
