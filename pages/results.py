@@ -160,11 +160,9 @@ preview_text = build_preview(text, 300 if compact_mode else 900)
 highlighted_preview = highlight_keywords(preview_text, matched_keywords)
 
 # -------------------------
-# 🔥 STABLE TRIPLE DECISION
+# 🔥 FINAL BALANCED TRIPLE DECISION
 # -------------------------
 keyword_score = len(matched_keywords)
-
-# Confidence gap (VERY IMPORTANT)
 gap = abs(fake_prob - real_prob)
 
 # 1. Strong FAKE (keywords dominate)
@@ -175,7 +173,7 @@ if keyword_score >= 3:
 
 # 2. Medium FAKE
 elif keyword_score == 2:
-    if fake_prob > real_prob:
+    if fake_prob >= 0.45:
         label = "🚨 FAKE JOB DETECTED"
         css_class = "fake"
         confidence = fake_prob
@@ -184,18 +182,19 @@ elif keyword_score == 2:
         css_class = "review"
         confidence = max(real_prob, fake_prob)
 
-# 3. Strong AI confidence (ONLY if gap is big)
-elif gap > 0.15:
-    if fake_prob > real_prob:
-        label = "🚨 FAKE JOB DETECTED"
-        css_class = "fake"
-        confidence = fake_prob
-    else:
-        label = "✅ REAL JOB POSTING"
-        css_class = "real"
-        confidence = real_prob
+# 3. CLEAR REAL (even small advantage)
+elif real_prob > fake_prob:
+    label = "✅ REAL JOB POSTING"
+    css_class = "real"
+    confidence = real_prob
 
-# 4. Low confidence → REVIEW
+# 4. CLEAR FAKE
+elif fake_prob > real_prob:
+    label = "🚨 FAKE JOB DETECTED"
+    css_class = "fake"
+    confidence = fake_prob
+
+# 5. ONLY EXACTLY EQUAL → REVIEW (rare)
 else:
     label = "⚠️ NEEDS REVIEW"
     css_class = "review"
