@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import gdown
 import os
 
 # -------------------------
@@ -13,31 +12,22 @@ st.set_page_config(
 )
 
 # -------------------------
-# Load Dataset (Google Drive FIXED)
+# Load Dataset (YOUR LINK FIXED)
 # -------------------------
 @st.cache_data
 def load_data():
-    file_id = "1mcyb_HcW21QiD56mMjuFj-pDIW7GPE_f"
-    output = "dataset.csv"
-
+    url = "https://drive.google.com/uc?export=download&id=1fhuqUbqF9eSAUepYVg7iULCxLnmTy8KK"
     try:
-        # Download only once
-        if not os.path.exists(output):
-            url = f"https://drive.google.com/uc?id={file_id}"
-            gdown.download(url, output, quiet=False)
-
-        df = pd.read_csv(output)
+        df = pd.read_csv(url)
         return df
-
     except Exception as e:
         st.error(f"Dataset loading failed: {e}")
         return None
 
-
 df = load_data()
 
 # -------------------------
-# Store Dataset in Session
+# Store Dataset
 # -------------------------
 if df is not None:
     st.session_state["data"] = df
@@ -46,7 +36,7 @@ else:
     st.warning("Dataset not loaded")
 
 # -------------------------
-# Sidebar Info (optional)
+# Sidebar
 # -------------------------
 st.sidebar.success("🚀 Fake Job Detection System")
 
@@ -55,8 +45,11 @@ st.sidebar.success("🚀 Fake Job Detection System")
 # -------------------------
 def load_css():
     css_file = os.path.join("assets", "styles.css")
-    with open(css_file) as f:
-        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    if os.path.exists(css_file):
+        with open(css_file) as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+load_css()
 
 # -------------------------
 # Navigation
