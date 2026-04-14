@@ -31,7 +31,7 @@ bert_loaded = False
 
 
 # -------------------------
-# Load BERT Model
+# Load BERT Model (FIXED)
 # -------------------------
 def load_bert_model():
     global tokenizer, bert_model, bert_loaded
@@ -41,8 +41,10 @@ def load_bert_model():
             import torch
             from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
-            tokenizer = AutoTokenizer.from_pretrained("saved_model")
-            model = AutoModelForSequenceClassification.from_pretrained("saved_model")
+            model_name = "distilbert-base-uncased"
+
+            tokenizer = AutoTokenizer.from_pretrained(model_name)
+            model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
             model.eval()
             bert_model = model
@@ -133,7 +135,6 @@ def extract_text_from_url(url):
 # UI SECTION
 # -------------------------
 
-# Hero
 st.markdown(
     """
     <div class="hero">
@@ -146,7 +147,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Input
 url = st.text_input("Enter Job Posting URL")
 
 analyze_button = st.button("Analyze Job")
@@ -176,6 +176,7 @@ if analyze_button:
 
                 if load_bert_model():
 
+                    # Store everything for results page
                     st.session_state.analysis_results = {
                         "url": url,
                         "text": text,
