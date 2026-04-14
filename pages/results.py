@@ -2,28 +2,27 @@ import streamlit as st
 import html
 import re
 
-try:
-    import torch
-    from transformers import AutoTokenizer, AutoModelForSequenceClassification
-    DEPENDENCIES_AVAILABLE = True
-except ImportError:
-    DEPENDENCIES_AVAILABLE = False
-
 # -------------------------
-# Load BERT Model
+# Load BERT (FIXED - ONLINE MODEL)
 # -------------------------
 @st.cache_resource
 def load_bert():
-    if not DEPENDENCIES_AVAILABLE:
-        return None, None
     try:
-        tokenizer = AutoTokenizer.from_pretrained("saved_model")
-        model = AutoModelForSequenceClassification.from_pretrained("saved_model")
+        import torch
+        from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+        model_name = "distilbert-base-uncased"
+
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model = AutoModelForSequenceClassification.from_pretrained(model_name)
+
         model.eval()
         return tokenizer, model
+
     except Exception as e:
         st.error(f"Error loading BERT model: {e}")
         return None, None
+
 
 tokenizer, bert_model = load_bert()
 
@@ -89,9 +88,14 @@ def build_preview(text, max_chars=900):
     return trimmed + "..."
 
 
+# -------------------------
+# BERT Prediction
+# -------------------------
 def predict_with_bert(text):
     if tokenizer is None or bert_model is None:
         return 0, [0.5, 0.5]
+
+    import torch
 
     inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
 
@@ -109,6 +113,7 @@ def predict_with_bert(text):
     pred_id = 1 if probs[1] >= probs[0] else 0
 
     return pred_id, probs
+
 
 # -------------------------
 # UI SETTINGS
@@ -135,9 +140,6 @@ url = results["url"]
 decision_threshold = results["decision_threshold"]
 show_uncertain = results["show_uncertain"]
 
-# ✅ FIXED (no crash)
-flip_label_mapping = results.get("flip_label_mapping", False)
-
 # -------------------------
 # DISPLAY URL
 # -------------------------
@@ -150,9 +152,6 @@ prediction, probs = predict_with_bert(text)
 
 real_prob = probs[0]
 fake_prob = probs[1]
-
-if flip_label_mapping:
-    real_prob, fake_prob = fake_prob, real_prob
 
 # -------------------------
 # ANALYSIS
@@ -209,7 +208,6 @@ with col2:
 # -------------------------
 if not compact_mode:
     st.subheader("Reasons")
-
     for r in reasons:
         st.write("•", r)
 
