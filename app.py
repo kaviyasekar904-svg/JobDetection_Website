@@ -1,9 +1,11 @@
 import streamlit as st
 import pandas as pd
 import os
+import torch
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 # -------------------------
-# Page Config (MUST BE FIRST)
+# Page Config
 # -------------------------
 st.set_page_config(
     page_title="Fake Job Detection",
@@ -12,7 +14,7 @@ st.set_page_config(
 )
 
 # -------------------------
-# Load Dataset (YOUR LINK FIXED)
+# Load Dataset (Google Drive)
 # -------------------------
 @st.cache_data
 def load_data():
@@ -26,9 +28,6 @@ def load_data():
 
 df = load_data()
 
-# -------------------------
-# Store Dataset
-# -------------------------
 if df is not None:
     st.session_state["data"] = df
     st.success("Dataset Loaded Successfully ✅")
@@ -36,12 +35,59 @@ else:
     st.warning("Dataset not loaded")
 
 # -------------------------
+# Load BERT Model
+# -------------------------
+@st.cache_resource
+def load_bert():
+    try:
+        model_name = "distilbert-base-uncased"
+
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model = AutoModelForSequenceClassification.from_pretrained(model_name)
+
+        return tokenizer, model
+
+    except Exception as e:
+        st.error(f"Model loading failed: {e}")
+        return None, None
+
+
+tokenizer, model = load_bert()
+
+# -------------------------
+# Prediction Function
+# -------------------------
+def predict_fake_job(text):
+    try:
+        inputs = tokenizer(
+            text,
+            return_tensors="pt",
+            truncation=True,
+            padding=True,
+            max_length=512
+        )
+
+        outputs = model(**inputs)
+        probs = torch.nn.functional.softmax(outputs.logits, dim=1)
+
+        confidence = torch.max(probs).item()
+        label = torch.argmax(probs).item()
+
+        if label == 1:
+            return "Fake", confidence
+        else:
+            return "Real", confidence
+
+    except Exception as e:
+        return "Error", 0
+
+# -------------------------
 # Sidebar
 # -------------------------
 st.sidebar.success("🚀 Fake Job Detection System")
 
 # -------------------------
-# Load CSS
+# Load CSS (optional)
 # -------------------------
 def load_css():
     css_file = os.path.join("assets", "styles.css")
