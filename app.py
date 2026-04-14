@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import gdown
+import os
 
 # -------------------------
 # Page Config (MUST BE FIRST)
@@ -11,27 +13,42 @@ st.set_page_config(
 )
 
 # -------------------------
-# Load Dataset (SAFE)
+# Load Dataset (Google Drive FIXED)
 # -------------------------
 @st.cache_data
 def load_data():
-    url = "https://drive.google.com/uc?export=download&id=1mcyb_HcW21QiD56mMjuFj-pDIW7GPE_f"
+    file_id = "1mcyb_HcW21QiD56mMjuFj-pDIW7GPE_f"
+    output = "dataset.csv"
+
     try:
-        df = pd.read_csv(url)
+        # Download only once
+        if not os.path.exists(output):
+            url = f"https://drive.google.com/uc?id={file_id}"
+            gdown.download(url, output, quiet=False)
+
+        df = pd.read_csv(output)
         return df
+
     except Exception as e:
         st.error(f"Dataset loading failed: {e}")
         return None
 
+
 df = load_data()
 
 # -------------------------
-# Store in Session
+# Store Dataset in Session
 # -------------------------
 if df is not None:
     st.session_state["data"] = df
+    st.success("Dataset Loaded Successfully ✅")
 else:
     st.warning("Dataset not loaded")
+
+# -------------------------
+# Sidebar Info (optional)
+# -------------------------
+st.sidebar.success("🚀 Fake Job Detection System")
 
 # -------------------------
 # Navigation
