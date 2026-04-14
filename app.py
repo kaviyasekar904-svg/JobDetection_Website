@@ -1,7 +1,6 @@
 import streamlit as st
-import os
 import pandas as pd
-st.session_state["data"] = df
+
 # -------------------------
 # Page Config (MUST BE FIRST)
 # -------------------------
@@ -12,29 +11,27 @@ st.set_page_config(
 )
 
 # -------------------------
-# Load Dataset (Cached ✅)
+# Load Dataset (SAFE)
 # -------------------------
 @st.cache_data
 def load_data():
-    url = "https://drive.google.com/uc?id=1mcyb_HcW21QiD56mMjuFj-pDIW7GPE_f"
-    return pd.read_csv(url)
+    url = "https://drive.google.com/uc?export=download&id=1mcyb_HcW21QiD56mMjuFj-pDIW7GPE_f"
+    try:
+        df = pd.read_csv(url)
+        return df
+    except Exception as e:
+        st.error(f"Dataset loading failed: {e}")
+        return None
 
 df = load_data()
 
-# Optional (debug)
-st.write("Dataset Loaded Successfully ✅")
-st.write(df.head())
-
 # -------------------------
-# Load CSS
+# Store in Session
 # -------------------------
-def load_css():
-    css_file = os.path.join("assets", "styles.css")
-    if os.path.exists(css_file):   # ✅ avoid crash
-        with open(css_file) as f:
-            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-
-load_css()
+if df is not None:
+    st.session_state["data"] = df
+else:
+    st.warning("Dataset not loaded")
 
 # -------------------------
 # Navigation
