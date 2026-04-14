@@ -3,7 +3,7 @@ import html
 import re
 
 # -------------------------
-# Load BERT (FIXED - ONLINE MODEL)
+# Load BERT Model (ONLINE)
 # -------------------------
 @st.cache_resource
 def load_bert():
@@ -137,8 +137,6 @@ results = st.session_state.analysis_results
 
 text = results["text"]
 url = results["url"]
-decision_threshold = results["decision_threshold"]
-show_uncertain = results["show_uncertain"]
 
 # -------------------------
 # DISPLAY URL
@@ -162,22 +160,29 @@ preview_text = build_preview(text, 300 if compact_mode else 900)
 highlighted_preview = highlight_keywords(preview_text, matched_keywords)
 
 # -------------------------
-# DECISION LOGIC
+# 🔥 HYBRID DECISION LOGIC
 # -------------------------
-if show_uncertain and max(real_prob, fake_prob) < decision_threshold:
-    label = "⚠️ NEEDS REVIEW"
-    css_class = "review"
-    confidence = max(real_prob, fake_prob)
+keyword_score = len(matched_keywords)
 
-elif fake_prob >= real_prob and fake_prob >= decision_threshold:
+if keyword_score >= 3:
+    label = "🚨 FAKE JOB DETECTED"
+    css_class = "fake"
+    confidence = 0.85
+
+elif fake_prob > 0.6:
     label = "🚨 FAKE JOB DETECTED"
     css_class = "fake"
     confidence = fake_prob
 
-else:
+elif real_prob > 0.6:
     label = "✅ REAL JOB POSTING"
     css_class = "real"
     confidence = real_prob
+
+else:
+    label = "⚠️ NEEDS REVIEW"
+    css_class = "review"
+    confidence = max(real_prob, fake_prob)
 
 # -------------------------
 # RESULT CARD
