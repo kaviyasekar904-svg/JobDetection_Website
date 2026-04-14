@@ -159,42 +159,44 @@ reasons, matched_keywords = build_reasons(text)
 preview_text = build_preview(text, 300 if compact_mode else 900)
 highlighted_preview = highlight_keywords(preview_text, matched_keywords)
 
-# -------------------------
-# 🔥 FINAL BALANCED TRIPLE DECISION
+
+  # -------------------------
+# 🔥 FINAL SAFE TRIPLE LOGIC
 # -------------------------
 keyword_score = len(matched_keywords)
-gap = abs(fake_prob - real_prob)
 
-# 1. Strong FAKE (keywords dominate)
-if keyword_score >= 3:
+# Split keywords into strong vs weak
+strong_keywords = [
+    "registration fee", "payment to apply", "deposit",
+    "wire transfer", "gift card", "crypto"
+]
+
+strong_hits = [kw for kw in matched_keywords if kw in strong_keywords]
+
+# 1. STRONG FAKE (only if serious scam words)
+if len(strong_hits) >= 1:
     label = "🚨 FAKE JOB DETECTED"
     css_class = "fake"
     confidence = 0.90
 
-# 2. Medium FAKE
-elif keyword_score == 2:
-    if fake_prob >= 0.45:
-        label = "🚨 FAKE JOB DETECTED"
-        css_class = "fake"
-        confidence = fake_prob
-    else:
-        label = "⚠️ NEEDS REVIEW"
-        css_class = "review"
-        confidence = max(real_prob, fake_prob)
+# 2. MODERATE SUSPICION
+elif keyword_score >= 3:
+    label = "⚠️ NEEDS REVIEW"
+    css_class = "review"
+    confidence = 0.6
 
-# 3. CLEAR REAL (even small advantage)
+# 3. BERT DECISION (safe)
+elif fake_prob > real_prob + 0.1:
+    label = "🚨 FAKE JOB DETECTED"
+    css_class = "fake"
+    confidence = fake_prob
+
 elif real_prob > fake_prob:
     label = "✅ REAL JOB POSTING"
     css_class = "real"
     confidence = real_prob
 
-# 4. CLEAR FAKE
-elif fake_prob > real_prob:
-    label = "🚨 FAKE JOB DETECTED"
-    css_class = "fake"
-    confidence = fake_prob
-
-# 5. ONLY EXACTLY EQUAL → REVIEW (rare)
+# 4. UNCERTAIN
 else:
     label = "⚠️ NEEDS REVIEW"
     css_class = "review"
