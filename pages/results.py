@@ -160,30 +160,39 @@ preview_text = build_preview(text, 300 if compact_mode else 900)
 highlighted_preview = highlight_keywords(preview_text, matched_keywords)
 
 # -------------------------
-# 🔥 HYBRID DECISION LOGIC
+# 🔥 BALANCED TRIPLE DECISION
 # -------------------------
 keyword_score = len(matched_keywords)
 
+# Strong FAKE signal (keywords dominate)
 if keyword_score >= 3:
     label = "🚨 FAKE JOB DETECTED"
     css_class = "fake"
-    confidence = 0.85
+    confidence = 0.90
 
-elif fake_prob > 0.6:
+# Medium FAKE signal
+elif keyword_score == 2 and fake_prob > 0.45:
     label = "🚨 FAKE JOB DETECTED"
     css_class = "fake"
     confidence = fake_prob
 
-elif real_prob > 0.6:
+# Strong REAL signal
+elif real_prob > 0.60:
     label = "✅ REAL JOB POSTING"
     css_class = "real"
     confidence = real_prob
 
+# Strong FAKE from BERT
+elif fake_prob > 0.60:
+    label = "🚨 FAKE JOB DETECTED"
+    css_class = "fake"
+    confidence = fake_prob
+
+# ⚠️ UNCERTAIN CASE
 else:
     label = "⚠️ NEEDS REVIEW"
     css_class = "review"
     confidence = max(real_prob, fake_prob)
-
 # -------------------------
 # RESULT CARD
 # -------------------------
